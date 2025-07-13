@@ -47,7 +47,7 @@ Class {
 		'methodObject',
 		'methodHeader',
 		'selector',
-		'codeSize'
+		'metaSize'
 	],
 	#pools : [
 		'CogMethodConstants',
@@ -261,14 +261,6 @@ CogMethod >> cmUsesPenultimateLit: anObject [
 	^cmUsesPenultimateLit := anObject
 ]
 
-{ #category : 'accessing' }
-CogMethod >> codeSize: anInteger [
-	<feature: #codeOnlyZone>
-	"Set the value of the size of the code only zone"
-
-	^codeSize := anInteger
-]
-
 { #category : 'testing' }
 CogMethod >> containsAddress: anAddress [
 	"is anAddress within my bounds; not a test of addresses referred to within instructions in the method"
@@ -309,6 +301,14 @@ CogMethod >> cpicHasMNUCaseOrCMIsFullBlock: anObject [
 	"Set the value of cpicHasMNUCaseOrCMIsFullBlock"
 
 	^cpicHasMNUCaseOrCMIsFullBlock := anObject
+]
+
+{ #category : 'accessing' }
+CogMethod >> metaSize: anInteger [
+	<feature: #metaZone>
+	"Set the value of the size of the meta zone"
+
+	^metaSize := anInteger
 ]
 
 { #category : 'accessing' }

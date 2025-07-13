@@ -1916,7 +1916,7 @@ SpurMemoryManager >> allocateMemoryOfSize: memoryBytes initialAddress: initialAd
 
 { #category : 'initialization' }
 SpurMemoryManager >> allocateMemoryOfSize: memoryBytes newSpaceSize: newSpaceBytes stackSize: stackBytes codeSize: codeBytes methodCacheSize: methodCacheSize primitiveTraceLogSize: primitiveLogSize rumpCStackSize: rumpCStackSize permSpaceSize: permSpaceSize [
-	<feature: #codeOnlyZone>
+	<feature: #metaZone>
 
 	"Intialize the receiver for bootsraping an image.
 	 Set up a large oldSpace and an empty newSpace and set-up freeStart and scavengeThreshold
@@ -1941,7 +1941,7 @@ SpurMemoryManager >> allocateMemoryOfSize: memoryBytes newSpaceSize: newSpaceByt
 		initialNewSpaceSize: newSpaceBytes;
 		initialHeadroom: 0;
 		initialCodeZoneSize: codeBytes;
-		initialCodeOnlyZoneSize: codeBytes;  "SH: codeOnlyZone"
+		initialMetaZoneSize: codeBytes;  "SH: metaZone"
 		initialPermSpaceSize: permSpaceSize;
 		allocateHeap.
 		

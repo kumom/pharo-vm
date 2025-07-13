@@ -26,9 +26,9 @@ Class {
 		'spaceMaskToUse',
 		'permSpaceMask',
 		'newSpaceMask',
-		'initialCodeOnlyZoneSize',
-		'codeOnlyZoneStart',
-		'codeOnlyZoneEnd'
+		'initialMetaZoneSize',
+		'metaZoneStart',
+		'metaZoneEnd'
 	],
 	#pools : [
 		'VMBasicConstants'
@@ -82,24 +82,6 @@ VMMemoryMap class >> shouldBeGenerated [
 ]
 
 { #category : 'private' }
-VMMemoryMap >> allocateCodeOnlyZone [
-	<feature: #codeOnlyZone>
-	
-	initialCodeOnlyZoneSize = 0 ifTrue: [ ^ self ].
-	
-	self codeOnlyZoneStart: (self allocateJITMemory: initialCodeOnlyZoneSize _: codeZoneEnd).
-	self codeOnlyZoneStart ifNil: [ self insufficientMemoryAvailableError ].
-
-	self codeOnlyZoneStart = codeZoneEnd
-		ifFalse: [ 
-			self logError: 'Could not allocate codeOnlyZone in the expected place (%p), got %p' _: codeZoneEnd _: self codeOnlyZoneStart.
-			self error: 'Error allocating' ].
-	
-	self codeOnlyZoneEnd: codeOnlyZoneStart + initialCodeOnlyZoneSize.
-	
-]
-
-{ #category : 'private' }
 VMMemoryMap >> allocateCodeZone [
 	
 	initialCodeZoneSize = 0 ifTrue: [ ^ self ].
@@ -119,10 +101,10 @@ VMMemoryMap >> allocateCodeZone [
 { #category : 'allocating' }
 VMMemoryMap >> allocateHeap [
 	<inline: false>
-	<feature: #codeOnlyZone>
+	<feature: #metaZone>
 	
 	self allocateCodeZone.
-	self allocateCodeOnlyZone.
+	self allocateMetaZone.
 	self allocateNewObjectsSpace.
 	self allocateOldObjectsSpace.
 	self allocatePermObjectsSpace.
@@ -140,6 +122,24 @@ VMMemoryMap >> allocateMemory: desiredSize BaseAddress: baseAddress [
 
 	<doNotGenerate>
 	^ memoryManager allocate: desiredSize desiredPosition: baseAddress
+]
+
+{ #category : 'private' }
+VMMemoryMap >> allocateMetaZone [
+	<feature: #metaZone>
+	
+	initialMetaZoneSize = 0 ifTrue: [ ^ self ].
+	
+	self metaZoneStart: (self allocateJITMemory: initialMetaZoneSize _: codeZoneEnd).
+	self metaZoneStart ifNil: [ self insufficientMemoryAvailableError ].
+
+	self metaZoneStart = codeZoneEnd
+		ifFalse: [ 
+			self logError: 'Could not allocate metaZone in the expected place (%p), got %p' _: codeZoneEnd _: self metaZoneStart.
+			self error: 'Error allocating' ].
+	
+	self metaZoneEnd: metaZoneStart + initialMetaZoneSize.
+	
 ]
 
 { #category : 'private' }
@@ -304,26 +304,6 @@ VMMemoryMap >> calculateMaskToUse [
 ]
 
 { #category : 'accessing' }
-VMMemoryMap >> codeOnlyZoneEnd [
-	^codeOnlyZoneEnd
-]
-
-{ #category : 'accessing' }
-VMMemoryMap >> codeOnlyZoneEnd: anInteger [ 
-	codeOnlyZoneEnd := anInteger
-]
-
-{ #category : 'accessing' }
-VMMemoryMap >> codeOnlyZoneStart [
-	^ codeOnlyZoneStart
-]
-
-{ #category : 'accessing' }
-VMMemoryMap >> codeOnlyZoneStart: anInteger [ 
-	codeOnlyZoneStart := anInteger
-]
-
-{ #category : 'accessing' }
 VMMemoryMap >> codeZoneEnd [
 
 	^ codeZoneEnd
@@ -457,20 +437,6 @@ VMMemoryMap >> getpagesize [
 ]
 
 { #category : 'accessing' }
-VMMemoryMap >> initialCodeOnlyZoneSize [
-	<feature: #codeOnlyZone>
-
-	^ initialCodeOnlyZoneSize
-]
-
-{ #category : 'accessing' }
-VMMemoryMap >> initialCodeOnlyZoneSize: aValue [
-	<feature: #codeOnlyZone>
-
-	initialCodeOnlyZoneSize := aValue
-]
-
-{ #category : 'accessing' }
 VMMemoryMap >> initialCodeZoneSize [
 
 	^ initialCodeZoneSize
@@ -491,6 +457,20 @@ VMMemoryMap >> initialHeadroom [
 VMMemoryMap >> initialHeadroom: anInteger [ 
 	
 	initialHeadroom := anInteger 
+]
+
+{ #category : 'accessing' }
+VMMemoryMap >> initialMetaZoneSize [
+	<feature: #metaZone>
+
+	^ initialMetaZoneSize
+]
+
+{ #category : 'accessing' }
+VMMemoryMap >> initialMetaZoneSize: aValue [
+	<feature: #metaZone>
+
+	initialMetaZoneSize := aValue
 ]
 
 { #category : 'accessing' }
@@ -604,6 +584,30 @@ VMMemoryMap >> memset: startAddress _: value _: size [
 	startAddress to: startAddress + size - 1 by: BytesPerWord do: [ :address |
 		memoryManager longAt: address put: value ]
 
+]
+
+{ #category : 'accessing' }
+VMMemoryMap >> metaZoneEnd [
+	<feature: #metaZone>
+	^metaZoneEnd
+]
+
+{ #category : 'accessing' }
+VMMemoryMap >> metaZoneEnd: anInteger [ 
+	<feature: #metaZone>
+	metaZoneEnd := anInteger
+]
+
+{ #category : 'accessing' }
+VMMemoryMap >> metaZoneStart [
+	<feature: #metaZone>
+	^metaZoneStart
+]
+
+{ #category : 'accessing' }
+VMMemoryMap >> metaZoneStart: anInteger [ 
+	<feature: #metaZone>
+	metaZoneStart := anInteger
 ]
 
 { #category : 'accessing' }

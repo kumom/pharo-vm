@@ -70,7 +70,7 @@ Class {
 		'cogit',
 		'objectMemory',
 		'percentageToEnsureRelease',
-		'cozFreeStart'
+		'metaFreeStart'
 	],
 	#pools : [
 		'CogMethodConstants',
@@ -300,20 +300,6 @@ CogMethodZone >> compactionInProgress [
 	^compactionInProgress
 ]
 
-{ #category : 'accessing' }
-CogMethodZone >> cozFreeStart [
-	<feature: #codeOnlyZone>
-   "Next available address of the code only zone"
-	^cozFreeStart
-]
-
-{ #category : 'accessing' }
-CogMethodZone >> cozFreeStart: anInteger [
-	<feature: #codeOnlyZone>
-   "Next available address of the code only zone"
-	cozFreeStart := anInteger.
-]
-
 { #category : 'allocating' }
 CogMethodZone >> effectiveLimit [
 	<inline: true>
@@ -451,6 +437,20 @@ CogMethodZone >> manageFrom: theStartAddress to: theLimitAddress [
 	openPICList := nil.
 	methodBytesFreedSinceLastCompaction := 0.
 	methodCount := 0
+]
+
+{ #category : 'accessing' }
+CogMethodZone >> metaFreeStart [
+	<feature: #metaZone>
+   "Next available address of the meta zone"
+	^metaFreeStart
+]
+
+{ #category : 'accessing' }
+CogMethodZone >> metaFreeStart: anInteger [
+	<feature: #metaZone>
+   "Next available address of the meta zone"
+	metaFreeStart := anInteger.
 ]
 
 { #category : 'accessing' }

@@ -6,7 +6,7 @@ Class {
 		'memory',
 		'baseHeaderSize',
 		'cogit',
-		'codeSize'
+		'metaSize'
 	],
 	#pools : [
 		'CogMethodConstants',
@@ -138,14 +138,6 @@ CogMethodSurrogate >> cmIsFullBlock [
 	^ self cpicHasMNUCaseOrCMIsFullBlock
 ]
 
-{ #category : 'accessing' }
-CogMethodSurrogate >> codeSize: anInteger [
-	<feature: #codeOnlyZone>
-	"Set the value of the size of the code only zone"
-
-	^codeSize := anInteger
-]
-
 { #category : 'testing' }
 CogMethodSurrogate >> containsAddress: anAddress [
 	^address <= anAddress asUnsignedInteger
@@ -177,6 +169,14 @@ CogMethodSurrogate >> isVMSimulationAddress [
 { #category : 'comparing' }
 CogMethodSurrogate >> isZero [
 	^address = 0
+]
+
+{ #category : 'accessing' }
+CogMethodSurrogate >> metaSize: anInteger [
+	<feature: #metaZone>
+	"Set the value of the size of the meta zone"
+
+	^metaSize := anInteger
 ]
 
 { #category : 'accessing' }

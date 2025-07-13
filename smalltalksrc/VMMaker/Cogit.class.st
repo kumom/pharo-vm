@@ -4444,7 +4444,7 @@ Cogit >> cog: aMethodObj selector: aSelectorOop [
 	<api>
 	<returnTypeC: #'CogMethod *'>
 	<var: #startTime type: #usqLong>
-	<feature: #codeOnlyZone>
+	<feature: #metaZone>
 	
 	| selector cogMethod startTime |
 	<var: #cogMethod type: #'CogMethod *'>
@@ -6164,16 +6164,16 @@ Cogit >> fillInCPICHeader: pic numArgs: numArgs numCases: numCases hasMNUCase: h
 ]
 
 { #category : 'generate machine code' }
-Cogit >> fillInMethodHeader: method size: size codeSize: codeSize selector: selector [
+Cogit >> fillInMethodHeader: method size: size metaSize: metaSize selector: selector [
 	<returnTypeC: #'CogMethod *'>
 	<var: #method type: #'CogMethod *'>
 	| originalMethod rawHeader |
 	<var: #originalMethod type: #'CogMethod *'>
-	<feature: #codeOnlyZone>
+	<feature: #metaZone>
 	method cmType: CMMethod.
 	method objectHeader: objectMemory nullHeaderForMachineCodeMethod.
 	method blockSize: size.
-	method codeSize: codeSize.
+	method metaSize: metaSize.
 	method methodObject: methodObj.
 	rawHeader := coInterpreter rawHeaderOf: methodObj.
 	"If the method has already been cogged then
@@ -7487,8 +7487,10 @@ Cogit >> generateCogFullBlock [
 	 that fixes up jumps.  When fixing up a jump the jump is not allowed to
 	 choose a smaller offset but must stick to the size set in the second pass."
 	<returnTypeC: #'CogMethod *'>
-	| codeSize headerSize mapSize totalSize startAddress result method |
+	| codeSize headerSize mapSize totalSize metaSize startAddress metaStartAddress result method method_ |
 	<var: #method type: #'CogMethod *'>
+	<feature: #metaZone>
+	
 	headerSize := self sizeof: CogMethod.
 	methodLabel address: methodZone freeStart.
 	self computeMaximumSizes.
@@ -7505,6 +7507,7 @@ Cogit >> generateCogFullBlock [
 	startAddress := methodZone allocate: totalSize.
 	startAddress = 0 ifTrue:
 		[^self cCoerceSimple: InsufficientCodeSpace to: #'CogMethod *'].
+	metaStartAddress := methodZone metaFreeStart.
 	self assert: startAddress + cbEntryOffset = fullBlockEntry address.
 	self assert: startAddress + cbNoSwitchEntryOffset = fullBlockNoContextSwitchEntry address.
 	
@@ -7516,14 +7519,22 @@ Cogit >> generateCogFullBlock [
 			self generateMapAt: startAddress + totalSize - 1 start: startAddress + cbNoSwitchEntryOffset.
 			self flag: #TOCHECK. "It's not clear we want the same header than regular methods. 
 			It could be of the same size, but maybe the cmType could be different and the selector could be ignored." 
+			metaSize := headerSize + mapSize.
 			method := self fillInMethodHeader: (self cCoerceSimple: startAddress to: #'CogMethod *')
 							size: totalSize
-							codeSize: codeSize
+							metaSize: metaSize
 							selector: objectMemory nilObject.
 			method cpicHasMNUCaseOrCMIsFullBlock: true.
 			postCompileHook ifNotNil:
 				[self perform: postCompileHook with: method.
-				 postCompileHook := nil]] 
+				 postCompileHook := nil].
+			
+			method_ := self fillInMethodHeader: (self cCoerceSimple: metaStartAddress to: #'CogMethod *')
+							size: totalSize
+							metaSize: metaSize
+							selector: objectMemory nilObject.
+			self generateMapAt: metaStartAddress + metaSize - 1 start: metaStartAddress + cbNoSwitchEntryOffset.
+		] 
 		flushingCacheWith: [	self flushICacheFrom: method asUnsignedInteger to: method asUnsignedInteger + totalSize].
 			
 	^method
@@ -7537,9 +7548,9 @@ Cogit >> generateCogMethod: selector [
 	 that fixes up jumps.  When fixing up a jump the jump is not allowed to
 	 choose a smaller offset but must stick to the size set in the second pass."
 	<returnTypeC: #'CogMethod *'>
-	| codeSize headerSize mapSize totalSize startAddress result method codeStartAddress codeResult |
+	| codeSize headerSize mapSize totalSize metaSize startAddress metaStartAddress result method method_ |
 	<var: #method type: #'CogMethod *'>
-	<feature: #codeOnlyZone>
+	<feature: #metaZone>
 
 	headerSize := self sizeof: CogMethod.
 	methodLabel address: methodZone freeStart.
@@ -7555,11 +7566,13 @@ Cogit >> generateCogMethod: selector [
 	statTotalHeaderSize := statTotalHeaderSize + headerSize.
 
 	totalSize := methodZone roundUpLength: headerSize + codeSize + mapSize.
+	metaSize := headerSize + mapSize.
 	totalSize > MaxMethodSize ifTrue:
 		[^self cCoerceSimple: MethodTooBig to: #'CogMethod *'].
 	startAddress := methodZone allocate: totalSize.
 	startAddress = 0 ifTrue:
 		[^self cCoerceSimple: InsufficientCodeSpace to: #'CogMethod *'].
+	metaStartAddress := methodZone metaFreeStart.
 	self assert: startAddress + cmEntryOffset = entry address.
 	self assert: startAddress + cmNoCheckEntryOffset = noCheckEntry address.
 
@@ -7569,19 +7582,20 @@ Cogit >> generateCogMethod: selector [
 			self assert: startAddress + headerSize + codeSize = result.
 			backEnd padIfPossibleWithStopsFrom: result to: startAddress + totalSize - mapSize - 1.
 			self generateMapAt: startAddress + totalSize - 1 start: startAddress + cmNoCheckEntryOffset.
+			
 			method := self fillInMethodHeader: (self cCoerceSimple: startAddress to: #'CogMethod *')
 							size: totalSize
-							codeSize: codeSize
+							metaSize: metaSize
 							selector: selector.
 			postCompileHook ifNotNil:
 				[self perform: postCompileHook with: method.
 				 postCompileHook := nil].
-			"SH: codeOnlyZone"
-			codeStartAddress := methodZone cozFreeStart.
-			codeResult := self outputInstructionsAt: codeStartAddress.
-			self assert: codeStartAddress + codeSize = codeResult.
-			backEnd padIfPossibleWithStopsFrom: codeResult to: codeStartAddress + codeSize - 1.
-			methodZone cozFreeStart: codeStartAddress + codeSize.
+			
+			method_ := self fillInMethodHeader: (self cCoerceSimple: metaStartAddress to: #'CogMethod *')
+							size: totalSize
+							metaSize: metaSize
+							selector: selector.
+			self generateMapAt: metaStartAddress + metaSize - 1 start: metaStartAddress + cmNoCheckEntryOffset.
 			]  
 		flushingCacheWith: [self flushICacheFrom: method asUnsignedInteger to: method asUnsignedInteger + totalSize].
 

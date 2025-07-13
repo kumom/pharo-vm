@@ -601,7 +601,7 @@ CoInterpreter >> addNewMethodToCache: classObj [
 
 { #category : 'image save/restore' }
 CoInterpreter >> allocateMemoryForImage: f withHeader: header [
-	<feature: #codeOnlyZone>
+	<feature: #metaZone>
 
 	<var: #f type: #sqImageFile>
 	<var: #header type: #SpurImageHeaderStruct>
@@ -616,7 +616,7 @@ CoInterpreter >> allocateMemoryForImage: f withHeader: header [
 	cogCodeSize := cogCodeSize min: cogit maxCogCodeSize.
 
 	objectMemory getMemoryMap initialCodeZoneSize: cogCodeSize.
-	objectMemory getMemoryMap initialCodeOnlyZoneSize: cogCodeSize. "SH: code only zone"
+	objectMemory getMemoryMap initialMetaZoneSize: cogCodeSize. 
 	super allocateMemoryForImage: f withHeader: header.
 	self beforeCodeZoneInitialization.
 
@@ -624,10 +624,9 @@ CoInterpreter >> allocateMemoryForImage: f withHeader: header [
 		initializeCodeZoneFrom: objectMemory getMemoryMap codeZoneStart
 		upTo: objectMemory getMemoryMap codeZoneEnd.
 		
-	"SH: code only zone"
 	cogit
-		initializeCodeOnlyZoneFrom: objectMemory getMemoryMap codeOnlyZoneStart
-		upTo: objectMemory getMemoryMap codeOnlyZoneEnd.
+		initializeMetaZoneFrom: objectMemory getMemoryMap metaZoneStart
+		upTo: objectMemory getMemoryMap metaZoneEnd.
 ]
 
 { #category : 'trampoline support' }

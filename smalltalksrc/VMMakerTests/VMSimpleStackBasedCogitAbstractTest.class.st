@@ -792,7 +792,7 @@ VMSimpleStackBasedCogitAbstractTest >> sentSelector: anObject [
 
 { #category : 'running' }
 VMSimpleStackBasedCogitAbstractTest >> setUp [
-   <feature: #codeOnlyZone>
+   <feature: #metaZone>
 	super setUp.
 
 	cogit := self newJitCompiler.
@@ -814,7 +814,7 @@ VMSimpleStackBasedCogitAbstractTest >> setUp [
 	cogInitialAddress := memory getMemoryMap codeZoneStart.
 
 	cogit methodZone manageFrom: cogInitialAddress to: memory getMemoryMap codeZoneEnd.
-	cogit methodZone cozFreeStart: memory getMemoryMap codeZoneEnd.
+	cogit methodZone metaFreeStart: memory getMemoryMap codeZoneEnd.
 	cogit methodZoneBase: cogInitialAddress.
 	cogit minCallAddress: cogInitialAddress.
 	cogit cogCodeBase: cogInitialAddress.
