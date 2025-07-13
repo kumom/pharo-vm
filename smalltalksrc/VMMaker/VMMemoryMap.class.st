@@ -509,8 +509,10 @@ VMMemoryMap >> initialPermSpaceSize: anObject [
 
 { #category : 'initialization' }
 VMMemoryMap >> initializeMemoryMap [
+	<feature: #metaZone>
 
 	initialCodeZoneSize := 0.
+	initialMetaZoneSize := 0.
 	initialPermSpaceSize := 0.
 	minPermSpaceSize := 0.
 	permSpaceStart := 0.
